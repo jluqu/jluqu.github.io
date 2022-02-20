@@ -234,7 +234,9 @@ function get_prime_factors(x) {
             i += 1
         }
     }
-    factors.push(x)
+    if (x > 1) {
+        factors.push(x)
+    }
     return factors
 }
 
