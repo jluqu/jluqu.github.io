@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Modular Multiplication Meditation Application</title>
+    <style>
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: auto;
+}
+div.controls {
+    font: 14px Arial;
+    position: absolute;
+    background-color: #FFFFFF;
+    top: 0;
+    left: 0;
+    width: 310px;
+    height: 230px;
+    border: 1px solid #A0A0A0;
+    z-index: 2;
+}
+table, tr, td {
+    font: 14px Arial;
+}
+</style></head>
+<body bgcolor="#FFFFFF">
+<div class="controls">
+    <table border='0' cellspacing='3'>
+        <tr><td>Multiplier:</td><td><input size="4" maxlength="4" oninput="update()" type="text" id="multiplier_input"/> <span style="color:#808080">(up / down keys)</span></td></tr>
+        <tr><td>Modulus:</td><td><input size="4" maxlength="4" oninput="update()" type="text" id="modulus_input"/> <span style="color:#808080">(left / right keys)</span></td></tr>
+        <tr><td>Coloring:</td>
+            <td><select id="coloring_option" onchange="update()">
+                    <option value="SOLID">Solid</option>
+                    <option value="SHOW_LENGTH">Show length</option>
+                    <option value="SHOW_DIRECTION">Show direction</option>
+                    <option value="SHOW_LOOPS">Show loops</option>
+                </select>
+            </td>
+        </tr>
+        <tr><td>Line weight:</td>
+            <td><select id="line_weight" onchange="update()">
+                    <option value="4">4</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                    <option value="0.5">0.5</option>
+                    <option value="0.3">0.3</option>
+                    <option value="0.1">0.1</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <table border='0' cellspacing='3'>
+        <tr><td>Ratio: <span id="ratio"></span></td></tr>
+        <tr><td>Multiplier prime factors: <span id="mult_factors"></span></td></tr>
+        <tr><td>Modulus prime factors: <span id="mod_factors"></span></td></tr>
+        <tr><td>Least common multiple: <span id="lcm"></span></td></tr>
+        <tr><td># loops: <span id="num_loops"></span></td></tr>
+    </table>
+</div>
+<canvas id="thecanvas" width=1200 height=810 />
+<script>
+// yes I'm using global variables. Whatever, it's fine
+var multiplier = 2
+var modulus = 9
+var loops_need_calculated = true
+var line_width = 1
+var canvas = document.getElementById("thecanvas");
+var ctx = canvas.getContext("2d");
+var coloring_opt = "SOLID"
+var zoom_level = 10
+var last_mouse_x = 0
+var last_mouse_y = 0
+var center_x = 0
+var center_y = 0
+var mouse_down = false
+var num_loops = 0
+var loop_ids = new Array(9999)
+document.getElementById('multiplier_input').value = multiplier
+document.getElementById('modulus_input').value = modulus
+
+// Given a value in the range 0-1, return a color value using a given color map
+function get_color_value(x, color_map) {
+    function lerp(a, b, t) { return a + t*(b-a) }
+
+    for (var i = 0; i < color_map.length-1; i++) {
+        if (x >= color_map[i].t && x <= color_map[i+1].t) {
+            t2 = (x - color_map[i].t) / (color_map[i+1].t - color_map[i].t)
+            r = Math.floor(lerp(color_map[i].r, color_map[i+1].r, t2))
+            g = Math.floor(lerp(color_map[i].g, color_map[i+1].g, t2))
+            b = Math.floor(lerp(color_map[i].b, color_map[i+1].b, t2))
+        }
+    }
+    r = Math.max(Math.min(r, 255), 0)  // clamp color values to 0-255
+    g = Math.max(Math.min(g, 255), 0)
+    b = Math.max(Math.min(b, 255), 0)
+
+    function pad(s) { return s.length == 1 ? "0" + s : s }  // add a leading '0' to the color value if needed
+    color = "#" + pad(r.toString(16)) + pad(g.toString(16)) + pad(b.toString(16))
+    return color
+}
+
+function calculate_loops() {
+    num_loops = 0
+    loop_ids.fill(-1, 0, modulus)
+    var cur_loop_id = 0
+    var i, j, k
+    for (i = 0; i < modulus; i++) {
+        if (loop_ids[i] === -1) {
+            j = i
+            while (loop_ids[j] === -1) {
+                loop_ids[j] = cur_loop_id
+                j = j*multiplier % modulus
+            }
+            // If this is a spur chain that runs into another loop, go back and update each node with that loop id
+            if (loop_ids[j] !== cur_loop_id) {
+                k = i
+                while (loop_ids[k] !== loop_ids[j]) {
+                    loop_ids[k] = loop_ids[j]
+                    k = k*multiplier % modulus
+                }
+            } else {
+                num_loops++
+                cur_loop_id++
+            }
+        }
+    }
+    loops_need_calculated = false
+}
+
+function update() {
+    multiplier = parseInt(document.getElementById('multiplier_input').value)
+    modulus = parseInt(document.getElementById('modulus_input').value)
+    coloring_opt = document.getElementById('coloring_option').value
+    document.getElementById("ratio").innerHTML = (modulus/multiplier).toFixed(8) + "&nbsp&nbsp&nbsp Inverse: " + (multiplier/modulus).toFixed(8)
+    document.getElementById("mult_factors").innerHTML = get_prime_factors(multiplier).toString()
+    document.getElementById("mod_factors").innerHTML = get_prime_factors(modulus).toString()
+    lcm = get_lcm(modulus, multiplier)
+    document.getElementById("lcm").innerHTML = lcm.toString() + " = " + parseInt(lcm/multiplier).toString() + " * " + multiplier.toString()
+    if (loops_need_calculated) { calculate_loops() }
+    document.getElementById("num_loops").innerHTML = num_loops.toString()
+
+    ctx.fillStyle = '#FFFFFF'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    var radius = (zoom_level/10) * canvas.height * 0.47
+    ctx.strokeStyle = '#CCCCCC'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.arc(center_x, center_y, radius, 0, 2*Math.PI)
+    ctx.stroke()
+    var color_map = [ {t: 0.0, r: 255, g:   0, b:   0},
+                      {t: 0.2, r: 200, g: 200, b:   0},
+                      {t: 0.4, r:   0, g: 255, b:   0},
+                      {t: 0.6, r:   0, g: 200, b: 200},
+                      {t: 0.8, r:   0, g:   0, b: 255},
+                      {t: 1.0, r: 255, g:   0, b: 255} ]
+
+    function get_ring_x(t, radius) { return center_x + radius*Math.cos(Math.PI/2 - t*2*Math.PI) }
+    function get_ring_y(t, radius) { return center_y - radius*Math.sin(Math.PI/2 - t*2*Math.PI) }
+
+    for (i = 0; i < modulus; i++) {
+        ctx.fillStyle = "#FF0000"
+        if (modulus < 15*zoom_level) {
+            ctx.beginPath()
+            ctx.arc(get_ring_x(i/modulus, radius), get_ring_y(i/modulus, radius), 3, 0, 2*Math.PI)
+            ctx.fill()
+        }
+
+        // "location" varies from 0 at the start of the loop to 1 at the end
+        start_location = i/modulus
+        end_location = (i*multiplier % modulus)/modulus
+        var start_x = get_ring_x(start_location, radius)
+        var start_y = get_ring_y(start_location, radius)
+        var end_x = get_ring_x(end_location, radius)
+        var end_y = get_ring_y(end_location, radius)
+        ctx.lineWidth = parseFloat(document.getElementById('line_weight').value)
+        if (coloring_opt == "SOLID") {
+            ctx.strokeStyle = "#A00000"
+        } else if (coloring_opt == "SHOW_DIRECTION") {
+            // Draw the directional lines with a gradient, starting with light going dark
+            var grad = ctx.createLinearGradient(start_x, start_y, end_x, end_y)
+            grad.addColorStop(0, "#D0D0D0")
+            grad.addColorStop(1, "#000000")
+            ctx.strokeStyle = grad
+        } else if (coloring_opt == "SHOW_LENGTH") {
+            var length_2 = Math.pow(end_x - start_x, 2) + Math.pow(end_y - start_y, 2)
+            ctx.strokeStyle = get_color_value(length_2/(4*radius*radius), color_map)
+        } else if (coloring_opt == "SHOW_LOOPS") {
+            ctx.strokeStyle = get_color_value(loop_ids[i]/num_loops, color_map)
+        }
+        ctx.beginPath()
+        ctx.moveTo(start_x, start_y)
+        ctx.lineTo(end_x, end_y)
+        ctx.stroke()
+        if (modulus <= 15*zoom_level) {
+            ctx.fillStyle = "#000000"
+            ctx.font = "14px Arial"
+            ctx.fillText(i.toString(), get_ring_x(i/modulus, radius + 25) - 9, get_ring_y(i/modulus, radius + 15) + 3)
+        }
+    }
+    if ((coloring_opt == "SHOW_DIRECTION" || coloring_opt == "SHOW_LOOPS") && modulus < 15*zoom_level) {
+        // Draw the arrow heads
+        ctx.fillStyle = "#000000"
+        for (i = 0; i < modulus; i++) {
+            start_location = i/modulus
+            end_location = (i*multiplier % modulus)/modulus
+            start_x = get_ring_x(start_location, radius)
+            start_y = get_ring_y(start_location, radius)
+            end_x = get_ring_x(end_location, radius)
+            end_y = get_ring_y(end_location, radius)
+            var angle = Math.atan2(end_y - start_y, end_x - start_x)
+            ctx.translate(end_x, end_y)
+            ctx.rotate(angle + Math.PI/2)
+            ctx.beginPath()
+            ctx.moveTo(0, 0)
+            ctx.lineTo(5, 10)
+            ctx.lineTo(-5, 10)
+            ctx.fill()
+            ctx.setTransform(1, 0, 0, 1, 0, 0)
+        }
+    }
+}
+
+function get_prime_factors(x) {
+    var factors = []
+    i = 2;
+    while (i < Math.sqrt(x)+1) {
+        if (x % i == 0) {
+            factors.push(i);
+            x /= i
+        } else {
+            i += 1
+        }
+    }
+    factors.push(x)
+    return factors
+}
+
+function get_lcm(x, y) {
+    for (a = x; a <= x*y; a += x) {
+        if (a % y == 0) {
+            return a
+        }
+    }
+    return undefined
+}
+
+function zoom() {
+    var event = window.event
+	var delta = Math.max(1/1.1, Math.min(1.1, (event.wheelDelta || -event.detail)));
+    zoom_level *= delta
+    center_x += (window.event.clientX - center_x)*(1-delta)
+    center_y += (window.event.clientY - center_y)*(1-delta)
+    update()
+}
+
+function start_drag() {
+    mouse_down = true
+    last_mouse_x = window.event.clientX
+    last_mouse_y = window.event.clientY
+}
+
+function while_drag() {
+    if (mouse_down) {
+        center_x += (window.event.clientX - last_mouse_x)
+        center_y += (window.event.clientY - last_mouse_y)
+        last_mouse_x = window.event.clientX
+        last_mouse_y = window.event.clientY
+        update()
+    }
+}
+
+function stop_drag() {
+    mouse_down = false
+}
+
+// resize the canvas to fill browser window dynamically
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    update()
+}
+
+canvas.addEventListener('mousewheel', zoom)
+canvas.addEventListener('mousedown', start_drag);
+canvas.addEventListener('mousemove', while_drag);
+canvas.addEventListener('mouseup', stop_drag);
+
+window.addEventListener("keydown", function(event) {
+    if (event.defaultPrevented) {
+        return;  // Do nothing if the event was already processed
+    }
+    switch (event.key) {
+        case "ArrowDown":
+            if (multiplier > 1) { multiplier -= 1; } break;
+        case "ArrowUp":
+            if (multiplier < 9999) { multiplier += 1; } break; 
+        case "ArrowLeft":
+            if (modulus > 1) { modulus -= 1; } break;
+        case "ArrowRight":
+            if (modulus < 9999) { modulus += 1; } break; 
+        default:
+           return;
+    }
+    loops_need_calculated = true
+    document.getElementById('multiplier_input').value = multiplier.toString()
+    document.getElementById('modulus_input').value = modulus.toString()
+    update();
+    event.preventDefault(); // Don't allow events to be handled twice
+});
+
+window.onload = function() {
+    resizeCanvas()
+    center_x = canvas.width / 2
+    center_y = canvas.height / 2
+    window.addEventListener('resize', resizeCanvas, false);
+    update()
+}
+</script>
+</body>
+</html>
