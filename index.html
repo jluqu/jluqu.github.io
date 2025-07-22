@@ -1,19 +1,76 @@
 <html>
     <head>
-        <title>Programmy Doodles</title>
+        <title>Joe's Programmy Doodles</title>
         <style>
 body {
-    font-family: Arial 12px;
-    color: #000000;
+    /*
+    background-image: url('mandelbrot.png');
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    */
+    font-family: Verdana;
+    font-size: 14px;
+    color: #C0C0C0;
+}
+.blurlayer {
+    position: fixed;
+    top: -10px;
+    left: -10px;
+    width: calc(100% + 20px);
+    height: calc(100% + 20px);
+    background-image: url('mandelbrot.png');
+    background-size: cover;
+    filter: blur(2px);
+    z-index: 1;
+}
+h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 0;
+    
+}
+.contentbox {
+    position: relative;
+    background-color: rgba(0, 0, 30, 0.8);
+    /* blur background a bit */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    padding: 20px;
+    border-radius: 10px;
+    width: 800px;
+    height: 800px;
+    margin: 0 auto;
+    margin-top: 50px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+    z-index: 2;
+}
+a {
+    color: #C0C0FF;
+    text-decoration: none;
+    /*line-height: 1.5em;*/
+}
+a:hover {
+    color: #9090FF;
 }
         </style>
     </head>
     <body>
-        <h2>Programmy Doodles</h2>
-        <ul>
-            <li><a href="procgen/procgen.html">Procedurally generated terrain</a></li>
-            <li><a href="mousemaze/mousemaze.html">Mouse in a maze</a></li>
-            <li><a href="modmult.html">Modular Multiplcation Visualization</a></li>
-        </ul>
+        <div class="blurlayer"></div>
+        <div class="contentbox">
+            <div style="display: flex; flex-direction: column;">
+                <div style="margin-bottom: 20px;">Sometimes I get bored and make doodles...</div>
+                <h2>Procedural Generation Doodles</h2>
+                <a href="procgen/procgen.html">Procedurally generated terrain</a><br>
+                <span><a href="mousemaze/mousemaze.html">Mouse maze</a> - playing around with maze generation</span><br>
+                <span><a href="myrl/game.html">My attempt to start a rogue-like</a> - Randomly generated cave with some cool lighting effects.</span><br>
+
+                <br><br>
+
+                <h2 class="header">Mathy Doodles</h2>
+                <span><a href="modmult.html">Modular Multiplcation Visualization</a> - Submitted for a Mathologer coding challenge from <a href="https://www.youtube.com/watch?v=6ZrO90AI0c8">this video</a></span><br>
+                <span><a href="fern.html">Fractal Fern</a></span><br>
+                <span><a href="fract.html">Sierpinski Triangle</a></span><br>
+            </div>
+        </div>
     </body>
 </html>

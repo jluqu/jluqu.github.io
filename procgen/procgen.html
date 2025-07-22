@@ -1,7 +1,29 @@
 <html>
-    <head><title>Proc Gen Lab</title></head>
-    <body bgcolor='#303030'>
-        <center><canvas id='thecanvas'><center>
+    <head><title>Procecdurally Generated Terrain</title>
+        <style>
+            body {
+                background-color: #303030;
+                font-family: Verdana;
+                color: #C0C0C0;
+            }
+            #thecanvas {
+                border: 1px solid #C0C0C0;
+                margin-top: 20px;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+
+            }
+            span {
+                display: block;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id='thecanvas'></canvas><br>
+        <span>Press m to switch between map mode and exploration mode.</span>
+        <span>Refresh the page to generate a new map.</span>
     </body>
     <script src='procgen.js'></script>
     <script src='namegen.js'></script>

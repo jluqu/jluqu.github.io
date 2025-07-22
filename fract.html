@@ -1,0 +1,89 @@
+<html>
+<head><style>
+canvas {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    display: block;
+}
+.footer {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #C0C0C0;
+    font-family: Verdana;
+    font-size: 14px;
+}
+</style></head>
+<body bgcolor="#000000">
+<canvas id="thecanvas" width=1200 height=810></canvas>
+    <div class="footer">
+1. Pick a random blue point<br>
+2. Move halfway towards it and draw a dot there<br>
+3. Repeat<br><br>
+And this happens...
+    </div>
+<script>
+
+//// Evenly-spaced radial points
+//numPoints = 10
+//radius = 370
+//cx = 600
+//cy = 405
+//
+//p = []
+//for (i = 0; i < numPoints; i++) {
+//    p.push({x: cx + radius*Math.cos(i/numPoints * 6.2832),
+//            y: cy + radius*Math.sin(i/numPoints * 6.2832)})
+//}
+    
+// Sierpinski Triangle
+numPoints = 3
+p = [{x:  100, y: 750},
+     {x: 1100, y: 750},
+     {x:  600, y: 20}];
+
+curX = (p[0].x + p[1].x) / 2;
+curY = (p[0].y + p[1].y) / 2;
+
+
+
+var canvas = document.getElementById('thecanvas');
+var ctx = canvas.getContext('2d');
+
+
+function drawDot(x, y, isCorner) {
+    ctx.beginPath();
+    if (isCorner) {
+        ctx.fillStyle = "#0000FF"
+        //ctx.arc(x, y, 3);
+        ctx.fillRect(x-2, y-2, 5, 5);
+    } else {
+        ctx.fillStyle = "#FFFFFF"
+        ctx.fillRect(x, y, 1, 1);
+    }
+    ctx.fill();
+}
+    
+
+
+setInterval(function() {
+    r = Math.floor(Math.random() * numPoints);
+    curX = (curX + p[r].x) / 2;
+    curY = (curY + p[r].y) / 2;
+    
+    drawDot(curX, curY, false);
+    
+    for (i = 0; i < numPoints; i++) {
+        drawDot(p[i].x, p[i].y, true);
+    }
+    
+}, 0);
+</script>
+
+
+</html>

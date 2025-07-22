@@ -3,7 +3,7 @@ var canvas = document.getElementById('thecanvas')
 var ctx = canvas.getContext('2d')
 var BORDER = 10
 var clock = 0
-var size = "small"    // "small", "medium" or "large"
+var size = "medium"    // "small", "medium" or "large"
 
 var CELL_SIZE = 90
 var CELL_SIZE = 90

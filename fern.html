@@ -1,0 +1,85 @@
+<html>
+<head><style>
+canvas {
+    position: absolute;
+    top: 0;
+    
+    left: 0;
+    
+    margin: auto;
+    display: block;
+}
+</style></head>
+<body bgcolor="#000000">
+<canvas id="thecanvas" width=1600 height=1200>
+
+<script>
+
+// Fern 1
+function scrX(x) {
+    return x*100 + 1000
+}
+function scrY(y) {
+    return -y*100 + 1100
+}
+
+//// Fern 2
+//function scrX(x) {
+//    return x*100 + 600
+//}
+//function scrY(y) {
+//    return -y*100 + 850
+//}
+
+
+curX = 0
+curY = 0
+
+var canvas = document.getElementById('thecanvas');
+var ctx = canvas.getContext('2d');
+
+
+function drawDot(x, y) {
+    ctx.beginPath();
+    ctx.fillStyle = "#00FF00"
+    ctx.fillRect(x, y, 1, 1);
+    ctx.fill();
+}
+
+setInterval(function() {
+    r = Math.random() * 100;
+    
+    // Fern 1
+    if (r < 1) {
+        a = 0; b = 0; c = 0; d = 0.16; e = 0; f = 0;
+    } else if (r < 86) {
+        a = 0.85; b = 0.04; c = -0.04; d = 0.85; e = 0; f = 1.60;
+    } else if (r < 93) {
+        a = 0.20; b = -0.26; c = 0.23; d = 0.22; e = 0; f = 1.60;
+    } else {
+        a = -0.15; b = 0.28; c = 0.26; d = 0.24; e = 0; f = 0.44;
+    }
+    
+    //// Fern 2
+    //if (r < 2) {
+    //    a = 0; b = 0; c = 0; d = 0.25; e = 0; f = -0.4;
+    //} else if (r < 86) {
+    //    a = 0.95; b = 0.005; c = -0.005; d = 0.93; e = -0.002; f = 0.5;
+    //} else if (r < 93) {
+    //    a = 0.035; b = -0.2; c = 0.16; d = 0.04; e = -0.09; f = 0.02;
+    //} else {
+    //    a = -0.04; b = 0.2; c = 0.16; d = 0.04; e = 0.083; f = 0.12;
+    //}
+    
+    newX = a*curX + b*curY + e;
+    newY = c*curX + d*curY + f;
+    curX = newX;
+    curY = newY;
+
+    drawDot(scrX(curX), scrY(curY));
+}, 0);
+
+</script>
+
+
+</html>
